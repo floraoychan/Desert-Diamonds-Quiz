@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What Desert Diamond Shade Are You?</title>
+  <style>
+    :root {
+      --card: rgba(255, 248, 236, 0.92);
+      --card-strong: rgba(255, 248, 236, 0.98);
+      --text: #2f2418;
+      --muted: #6f5b45;
+      --accent: #a66a2c;
+      --accent-dark: #7c4d1f;
+      --border: rgba(120, 88, 54, 0.22);
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: #b97a3d;
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .desert-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .desert-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(rgba(31, 21, 12, 0.18), rgba(31, 21, 12, 0.36)),
+        radial-gradient(circle at 50% 18%, rgba(255, 247, 215, 0.18), transparent 32%);
+      pointer-events: none;
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 1080px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero {
+      padding: 28px 24px 18px;
+      background: linear-gradient(135deg, rgba(255, 228, 177, 0.94), rgba(181, 121, 54, 0.86));
+      color: #2c1f10;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 2rem;
+      line-height: 1.15;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 860px;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(44, 31, 16, 0.92);
+    }
+
+    .content {
+      padding: 24px;
+      position: relative;
+    }
+
+    .screen {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .screen.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      animation: fadeSlide 0.45s ease;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .intro-grid,
+    .result-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .info-card,
+    .question-box,
+    .result-card,
+    .direct-picker-card,
+    .share-card {
+      background: var(--card-strong);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+    }
+
+    .shade-preview,
+    .shade-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .swatch,
+    .shade-tile {
+      border-radius: 14px;
+      border: 1px solid rgba(70, 45, 20, 0.12);
+      color: rgba(45, 28, 12, 0.95);
+      font-weight: bold;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+    }
+
+    .swatch {
+      height: 64px;
+      display: flex;
+      align-items: end;
+      padding: 8px;
+      font-size: 0.78rem;
+    }
+
+    .shade-tile {
+      min-height: 88px;
+      width: 100%;
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      background: #fff8ef;
+    }
+
+    .shade-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    .shade-tile small {
+      display: block;
+      margin-top: 4px;
+      font-weight: normal;
+      text-shadow: none;
+      color: #4e3a26;
+      line-height: 1.35;
+    }
+
+    .btn-row,
+    .share-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .info-card .btn-row {
+      margin-top: 0;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #c9853e, #9f642c);
+      color: white;
+      box-shadow: 0 8px 20px rgba(166, 106, 44, 0.28);
+    }
+
+    .secondary-btn {
+      background: #efe2cf;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .ghost-btn {
+      background: rgba(255,255,255,0.7);
+      color: #5b4026;
+      border: 1px solid rgba(120, 88, 54, 0.16);
+    }
+
+    .progress-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .progress-label {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #ead8c0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f0c768, #b86c2c);
+      transition: width 0.28s ease;
+    }
+
+    .question-title {
+      margin: 0 0 18px;
+      font-size: 1.25rem;
+      line-height: 1.4;
+    }
+
+    .options {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #fffaf2;
+      border: 1px solid rgba(120, 88, 54, 0.16);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .option:hover {
+      background: #fff2df;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 0.86rem;
+      margin-bottom: 10px;
+      color: #3a2714;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(70, 45, 20, 0.12);
+    }
+
+    .result-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .result-card h3 {
+      margin: 0 0 12px;
+      color: var(--accent-dark);
+      font-size: 1.1rem;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .result-card p {
+      line-height: 1.6;
+      margin: 0 0 14px;
+    }
+
+    .section-title {
+      margin: 18px 0 8px;
+      font-size: 1rem;
+      color: #5e4226;
+    }
+
+    .traits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .trait {
+      background: rgba(255,255,255,0.68);
+      border: 1px solid rgba(70, 45, 20, 0.1);
+      color: #4f3821;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+    }
+
+    .style-list {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      line-height: 1.65;
+    }
+
+    .diamond-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 380px;
+      background:
+        radial-gradient(circle at 50% 22%, rgba(255,255,255,0.56), rgba(255,255,255,0.06) 35%, transparent 52%),
+        linear-gradient(180deg, rgba(255,246,227,0.9), rgba(234,212,178,0.76));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .diamond-stage::before {
+      content: "";
+      position: absolute;
+      inset: auto auto 35px 50%;
+      transform: translateX(-50%);
+      width: 190px;
+      height: 30px;
+      background: radial-gradient(ellipse, rgba(92, 55, 20, 0.28), rgba(92, 55, 20, 0.03) 70%, transparent 72%);
+      filter: blur(4px);
+    }
+
+    .diamond-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 1;
+      position: relative;
+    }
+
+    .diamond-name {
+      font-weight: bold;
+      color: #5b4026;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
+    .diamond-svg-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 240px;
+      height: 240px;
+    }
+
+    .sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      opacity: 0.85;
+      animation: twinkle 2s infinite ease-in-out;
+      transform-origin: center;
+    }
+
+    .sparkle::before,
+    .sparkle::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: rgba(255,255,255,0.9);
+      transform: translate(-50%, -50%);
+      border-radius: 999px;
+      box-shadow: 0 0 12px rgba(255,255,255,0.75);
+    }
+
+    .sparkle::before {
+      width: 2px;
+      height: 14px;
+    }
+
+    .sparkle::after {
+      width: 14px;
+      height: 2px;
+    }
+
+    .sparkle.s1 { top: 26px; left: 16px; animation-delay: 0s; }
+    .sparkle.s2 { top: 52px; right: 24px; animation-delay: 0.5s; }
+    .sparkle.s3 { bottom: 64px; left: 18px; animation-delay: 1s; }
+    .sparkle.s4 { bottom: 42px; right: 20px; animation-delay: 1.4s; }
+    .sparkle.s5 { top: 12px; left: 50%; margin-left: -7px; animation-delay: 1.8s; }
+
+    @keyframes twinkle {
+      0%, 100% { transform: scale(0.65) rotate(0deg); opacity: 0.35; }
+      50% { transform: scale(1.15) rotate(45deg); opacity: 1; }
+    }
+
+    .diamond-float {
+      animation: diamondFloat 3.6s ease-in-out infinite;
+      filter: drop-shadow(0 10px 22px rgba(133, 90, 37, 0.25));
+    }
+
+    @keyframes diamondFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .footnote,
+    .mini-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .instructions {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #fff7eb;
+      border: 1px solid rgba(120, 88, 54, 0.14);
+      color: #5b4026;
+      line-height: 1.6;
+    }
+
+    .share-output {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fff7eb;
+      border: 1px solid rgba(120, 88, 54, 0.14);
+      line-height: 1.5;
+      word-break: break-word;
+      display: none;
+    }
+
+    .copy-status {
+      margin-top: 10px;
+      color: #6b4b2a;
+      font-size: 0.92rem;
+      min-height: 1.2em;
+    }
+
+    @media (max-width: 860px) {
+      .intro-grid,
+      .result-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 1.7rem;
+      }
+
+      .content,
+      .hero {
+        padding: 18px;
+      }
+
+      .shade-preview,
+      .shade-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .diamond-stage {
+        min-height: 320px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .shade-preview,
+      .shade-grid {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .btn-row,
+      .share-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <svg class="desert-bg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f7d59a"/>
+        <stop offset="45%" stop-color="#efb16d"/>
+        <stop offset="100%" stop-color="#b86c35"/>
+      </linearGradient>
+      <radialGradient id="sunGlow" cx="50%" cy="22%" r="22%">
+        <stop offset="0%" stop-color="#fff7d8" stop-opacity="0.95"/>
+        <stop offset="45%" stop-color="#ffe094" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#ffe094" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="duneBack" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#d8a260"/>
+        <stop offset="100%" stop-color="#bb7637"/>
+      </linearGradient>
+      <linearGradient id="duneMid" x1="0" y1="0" x2="1" y2="0.6">
+        <stop offset="0%" stop-color="#e0b070"/>
+        <stop offset="100%" stop-color="#c27a3f"/>
+      </linearGradient>
+      <linearGradient id="duneFront" x1="0" y1="0" x2="1" y2="0.3">
+        <stop offset="0%" stop-color="#efc17d"/>
+        <stop offset="100%" stop-color="#d18a48"/>
+      </linearGradient>
+    </defs>
+
+    <rect width="1600" height="900" fill="url(#skyGrad)"></rect>
+    <circle cx="800" cy="190" r="160" fill="url(#sunGlow)"></circle>
+
+    <path d="M0,560 C220,470 420,470 640,540 C840,605 1040,610 1280,535 C1410,495 1500,485 1600,510 L1600,900 L0,900 Z" fill="url(#duneBack)"></path>
+    <path d="M0,650 C220,590 430,610 650,670 C860,728 1110,715 1325,655 C1455,620 1535,625 1600,645 L1600,900 L0,900 Z" fill="url(#duneMid)"></path>
+    <path d="M0,740 C250,675 460,705 710,762 C930,812 1190,792 1435,735 C1510,718 1568,720 1600,730 L1600,900 L0,900 Z" fill="url(#duneFront)"></path>
+  </svg>
+
+  <div class="desert-overlay"></div>
+
+  <main class="app">
+    <section class="panel">
+      <header class="hero">
+        <h1 id="appTitle">What Desert Diamond Shade Are You?</h1>
+        <p id="appSubtitle">Discover which of the 6 Desert Diamond shades reflects your mood, style, and personality — from bold Sunset Brown to radiant Honey.</p>
+      </header>
+
+      <div class="content">
+        <section class="screen active" id="introScreen">
+          <div class="intro-grid">
+            <div class="info-card">
+              <div class="instructions" id="introText">
+                Inspired by the language of modern luxury, natural warmth, and desert light, this quiz matches you to the Desert Diamond shade that feels most like you.
+              </div>
+
+              <div class="btn-row">
+                <button class="primary-btn" id="startBtn">Begin the quiz</button>
+              </div>
+
+              <h3 class="section-title">Explore all 6 shades</h3>
+              <div class="shade-preview" id="introSwatches"></div>
+
+              <p class="footnote">
+                Or skip the quiz and choose a shade directly below.
+              </p>
+            </div>
+
+            <div class="direct-picker-card">
+              <h3 style="margin-top:0;">Choose your shade directly</h3>
+              <p class="mini-note">Tap any Desert Diamond to view its editorial profile, mood, styling cues, and personality.</p>
+              <div class="shade-grid" id="directPicker"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="quizScreen">
+          <div class="question-box">
+            <div class="progress-wrap">
+              <div class="progress-label" id="progressLabel">Question 1 of 5</div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <h2 class="question-title" id="questionTitle"></h2>
+            <div class="options" id="optionsWrap"></div>
+
+            <div class="btn-row">
+              <button class="secondary-btn" id="backToIntroBtn">Back to intro</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="resultScreen">
+          <div class="result-layout">
+            <div class="result-card">
+              <div class="result-badge" id="resultBadge"></div>
+              <h2 id="resultName"></h2>
+              <h3 id="resultShort"></h3>
+
+              <p id="resultDescription"></p>
+              <p id="resultPersonality"></p>
+
+              <h4 class="section-title">Who wears it</h4>
+              <p id="resultWhoWears"></p>
+
+              <h4 class="section-title">Traits</h4>
+              <div class="traits" id="traitsWrap"></div>
+
+              <h4 class="section-title">How to style it</h4>
+              <ul class="style-list" id="styleList"></ul>
+
+              <h4 class="section-title">Inside the Earth’s palette</h4>
+              <p id="resultScience"></p>
+
+              <h4 class="section-title">Buying note</h4>
+              <p id="resultBuyNote"></p>
+
+              <div class="btn-row">
+                <button class="primary-btn" id="retakeBtn">Retake quiz</button>
+                <button class="secondary-btn" id="pickAnotherBtn">Choose another shade</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="diamond-stage" id="diamondStage">
+                <div class="diamond-wrap">
+                  <div class="diamond-svg-wrap">
+                    <div class="sparkles">
+                      <div class="sparkle s1"></div>
+                      <div class="sparkle s2"></div>
+                      <div class="sparkle s3"></div>
+                      <div class="sparkle s4"></div>
+                      <div class="sparkle s5"></div>
+                    </div>
+
+                    <svg class="diamond-float" id="diamondSvg" width="220" height="220" viewBox="0 0 220 220" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="diamondGrad" x1="0" y1="0" x2="1" y2="1">
+                          <stop id="grad1" offset="0%" stop-color="#f7e8be"></stop>
+                          <stop id="grad2" offset="55%" stop-color="#c9863f"></stop>
+                          <stop id="grad3" offset="100%" stop-color="#8a5536"></stop>
+                        </linearGradient>
+                      </defs>
+                      <polygon points="110,18 165,58 145,145 75,145 55,58" fill="url(#diamondGrad)" stroke="rgba(75,45,20,0.28)" stroke-width="2"></polygon>
+                      <polygon points="110,18 145,145 110,194 75,145" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.22)" stroke-width="1"></polygon>
+                      <line x1="110" y1="18" x2="110" y2="194" stroke="rgba(255,255,255,0.45)" stroke-width="1.3"></line>
+                      <line x1="55" y1="58" x2="165" y2="58" stroke="rgba(255,255,255,0.4)" stroke-width="1.3"></line>
+                      <line x1="75" y1="145" x2="145" y2="145" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"></line>
+                      <line x1="55" y1="58" x2="75" y2="145" stroke="rgba(255,255,255,0.33)" stroke-width="1.1"></line>
+                      <line x1="165" y1="58" x2="145" y2="145" stroke="rgba(255,255,255,0.33)" stroke-width="1.1"></line>
+                      <line x1="55" y1="58" x2="110" y2="18" stroke="rgba(255,255,255,0.36)" stroke-width="1.1"></line>
+                      <line x1="165" y1="58" x2="110" y2="18" stroke="rgba(255,255,255,0.36)" stroke-width="1.1"></line>
+                    </svg>
+                  </div>
+                  <div class="diamond-name" id="diamondName"></div>
+                </div>
+              </div>
+
+              <div class="share-card" style="margin-top:16px;">
+                <h3 style="margin-top:0;">Share your shade</h3>
+                <p class="mini-note">Copy your result text and share your Desert Diamond mood.</p>
+
+                <div class="share-row">
+                  <button class="primary-btn" id="copyShareBtn">Copy result</button>
+                  <button class="ghost-btn" id="showShareBtn">Preview share text</button>
+                </div>
+
+                <div class="share-output" id="shareOutput"></div>
+                <div class="copy-status" id="copyStatus"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const appCopy = {
+      title: "What Desert Diamond Shade Are You?",
+      subtitle: "Discover which of the 6 Desert Diamond shades reflects your mood, style, and personality — from bold Sunset Brown to radiant Honey.",
+      introText: "Inspired by the language of modern luxury, natural warmth, and desert light, this quiz matches you to the Desert Diamond shade that feels most like you.",
+      cta: "Begin the quiz"
+    };
+
+    const diamondShades = {
+      sunsetBrown: {
+        id: "sunsetBrown",
+        name: "Sunset Brown Desert Diamond",
+        shortName: "Sunset Brown",
+        color: "#6B3E26",
+        accent: "#8A5536",
+        glow: "#B47A55",
+        badge: "Bold, romantic, and effortlessly chic",
+        personality: "You are bold, romantic, and effortlessly chic. You value intention over excess and carry a softer, slower confidence that feels grounded, modern, and deeply individual.",
+        whoWears: "Sunset Brown belongs to the collector, the romantic, and the quiet luxury dresser — someone drawn to depth, nuance, and timeless taste rather than obvious sparkle.",
+        description: "There is a stillness to the desert at dusk, when heat softens and the horizon deepens into evocative shades of espresso. That same mood lives inside Sunset Brown: rich, measured, and full of emotional depth.",
+        style: [
+          "Pair with brushed gold for sculptural warmth",
+          "Layer with leather, silk, or velvet for tactile richness",
+          "Keep it tonal with cream, bronze, and honey palettes",
+          "Use platinum or white gold for a softer contrast",
+          "Wear as a single ring or pendant for quiet power"
+        ],
+        traits: ["Bold", "Romantic", "Grounded", "Quiet luxury", "Collector’s taste"],
+        science: "Its tone is shaped by plastic deformation and sometimes influenced by nitrogen, producing hues that range from bronze to deep espresso.",
+        buyNote: "Look for layered dimension rather than a flat surface shade. Sunset Brown rewards subtle gradation and pared-back settings.",
+        share: "I’m a Sunset Brown Desert Diamond — bold, romantic, and effortlessly chic."
+      },
+
+      ochre: {
+        id: "ochre",
+        name: "Ochre Desert Diamond",
+        shortName: "Ochre",
+        color: "#B56A2D",
+        accent: "#CC8444",
+        glow: "#E0A35B",
+        badge: "Creative, grounded, and boldly expressive",
+        personality: "You are creative, grounded, and boldly expressive. You value individuality, artistry, and natural luxury, with a presence that feels both steady and strong.",
+        whoWears: "Ochre belongs to the artist, the bold sophisticate, and the heritage lover — someone who sees beauty as both personal and cultural.",
+        description: "Shaped by the Earth, celebrated in art, and reborn in fashion, Ochre carries the warmth of desert horizons into fine jewelry with a color as rare as it is resonant.",
+        style: [
+          "Choose emerald cuts for architectural elegance",
+          "Try radiant cuts for warmth with brilliance",
+          "Use yellow gold to deepen warmth",
+          "Use rose gold for softness",
+          "Use platinum for a sharper modern edge"
+        ],
+        traits: ["Creative", "Expressive", "Grounded", "Artistic", "Distinctive"],
+        science: "Ochre diamonds are shaped by plastic deformation, with nitrogen often contributing to layered, sun-warmed golden tones.",
+        buyNote: "Look for a saturation that feels rich but not too dark, and always prioritize a well-cut stone for both fire and tone.",
+        share: "I’m an Ochre Desert Diamond — creative, grounded, and boldly expressive."
+      },
+
+      whiskey: {
+        id: "whiskey",
+        name: "Whiskey Desert Diamond",
+        shortName: "Whiskey",
+        color: "#A8682A",
+        accent: "#C07A34",
+        glow: "#D79A54",
+        badge: "Rich, subtle, and refined",
+        personality: "You are rich in character, subtle in expression, and refined in taste. You move with intention, appreciate depth over perfection, and embody a modern sophistication that never tries too hard.",
+        whoWears: "Whiskey belongs to the discerning dresser, the modern collector, and the person who builds a look rather than chasing trends.",
+        description: "Warm as aged spirits and lit from within like amber glass, Whiskey Desert diamonds feel deliberate, cinematic, and quietly magnetic.",
+        style: [
+          "Choose emerald or Asscher cuts for structure",
+          "Choose cushion or radiant cuts for softness and movement",
+          "Set in yellow or rose gold for warmth",
+          "Use platinum or white gold for contrast",
+          "Style with minimal silhouettes, leather, satin, or monochrome layers"
+        ],
+        traits: ["Refined", "Intentional", "Subtle", "Modern", "Cinematic"],
+        science: "Its depth comes from plastic deformation, often with nitrogen playing a supporting role, creating tones that move between amber, bronze, and deep mocha.",
+        buyNote: "Judge a Whiskey diamond in motion and in changing light. The best stones feel dimensional, not flat.",
+        share: "I’m a Whiskey Desert Diamond — rich, subtle, and refined."
+      },
+
+      champagne: {
+        id: "champagne",
+        name: "Champagne Desert Diamond",
+        shortName: "Champagne",
+        color: "#D8B06A",
+        accent: "#E7C17A",
+        glow: "#F3D998",
+        badge: "Joyful, elegant, and quietly confident",
+        personality: "You are joyful, elegant, and quietly confident. You appreciate craft, subtle indulgence, and life’s luminous moments, always choosing warmth with intention.",
+        whoWears: "Champagne belongs to the classic dresser with a playful streak — the wearer who loves timelessness, but never wants the expected version of it.",
+        description: "Like its namesake, Champagne sparkles with quiet joy and luxury. Its soft golden hue feels celebratory, refined, and effortlessly wearable.",
+        style: [
+          "Choose radiant cuts for amplified brilliance",
+          "Try cushion cuts for softness and romance",
+          "Choose emerald cuts for minimalist elegance",
+          "Use yellow gold for glowing richness",
+          "Use rose gold for warmth with a blush of softness"
+        ],
+        traits: ["Elegant", "Celebratory", "Softly glamorous", "Versatile", "Timeless with a twist"],
+        science: "Champagne diamonds owe their warm glow to nitrogen captured during formation, creating light yellow to brownish-yellow tones often associated with Cape shades.",
+        buyNote: "Let tone guide the decision. Richer hues feel bolder; paler tones glow with a softer, romantic light.",
+        share: "I’m a Champagne Desert Diamond — joyful, elegant, and quietly confident."
+      },
+
+      sand: {
+        id: "sand",
+        name: "Sand Desert Diamond",
+        shortName: "Sand",
+        color: "#D9C08A",
+        accent: "#E6CE9C",
+        glow: "#F2E2BA",
+        badge: "Grounded, graceful, and quietly captivating",
+        personality: "You are grounded, graceful, and quietly captivating. You embody balance, resilience, and ease, with a style that feels natural, calm, and beautifully assured.",
+        whoWears: "Sand belongs to the grounded sophisticate, the romantic, and the minimalist — someone who values harmony, softness, and enduring beauty.",
+        description: "At the center of the Desert diamonds palette, Sand holds a warm and grounding radiance — the calm middle ground between statement and simplicity.",
+        style: [
+          "Choose oval, cushion, radiant, or pear cuts",
+          "Set in yellow or rose gold to deepen warmth",
+          "Use platinum to create a modern edge",
+          "Wear with linen, silk, denim, or warm neutrals",
+          "Style as studs, pendants, or a fine tennis bracelet for everyday elegance"
+        ],
+        traits: ["Grounded", "Graceful", "Versatile", "Calm", "Enduring"],
+        science: "Sand diamonds often sit in a soft golden range shaped by trace nitrogen in the crystal lattice, absorbing blue light and producing a light warm yellow tone.",
+        buyNote: "View Sand diamonds in both natural and artificial light to understand their full tone and balance.",
+        share: "I’m a Sand Desert Diamond — grounded, graceful, and quietly captivating."
+      },
+
+      honey: {
+        id: "honey",
+        name: "Honey Desert Diamond",
+        shortName: "Honey",
+        color: "#D99A1F",
+        accent: "#EAB33A",
+        glow: "#F7CF68",
+        badge: "Golden, glowing, and seriously glamorous",
+        personality: "You are golden, glowing, and seriously glamorous. Warmth is your signature, confidence is your instinct, and you bring sweetness, radiance, and style wherever you go.",
+        whoWears: "Honey belongs to the romantic, the glamour lover, and the naturalist — someone drawn to warmth, symbolism, and standout beauty with heart.",
+        description: "Sunlight streaking across sand like warm honey from a spoon — that is the essence of Honey Desert diamonds: rich, radiant, and deliciously luminous.",
+        style: [
+          "Choose cushion cuts for soft golden depth",
+          "Use radiant cuts for impact and sparkle",
+          "Try oval or pear cuts for elegant warmth",
+          "Set in yellow gold for seamless glow",
+          "Use platinum or white gold for a fresher contrast"
+        ],
+        traits: ["Radiant", "Glamorous", "Warm", "Sweet", "Confident"],
+        science: "Honey diamonds owe their color to nitrogen in the crystal structure, producing tones from soft buttercream to deep golden amber.",
+        buyNote: "Choose a cut that enhances both color and light. Honey should feel rich, warm, and alive rather than dull.",
+        share: "I’m a Honey Desert Diamond — golden, glowing, and seriously glamorous."
+      }
+    };
+
+    const pickerLabels = [
+      { key: "sunsetBrown", title: "Sunset Brown", subtitle: "Bold, romantic, effortlessly chic" },
+      { key: "ochre", title: "Ochre", subtitle: "Creative, grounded, boldly expressive" },
+      { key: "whiskey", title: "Whiskey", subtitle: "Rich, subtle, refined" },
+      { key: "champagne", title: "Champagne", subtitle: "Joyful, elegant, quietly confident" },
+      { key: "sand", title: "Sand", subtitle: "Grounded, graceful, quietly captivating" },
+      { key: "honey", title: "Honey", subtitle: "Golden, glowing, seriously glamorous" }
+    ];
+
+    const quizQuestions = [
+      {
+        question: "Which atmosphere feels most like you?",
+        options: [
+          { text: "A twilight room in espresso, bronze, and velvet", scores: { sunsetBrown: 3, whiskey: 1 } },
+          { text: "A terracotta studio filled with art, texture, and history", scores: { ochre: 3, sand: 1 } },
+          { text: "A softly lit penthouse with amber glass and sculptural gold", scores: { whiskey: 3, champagne: 1 } },
+          { text: "A golden celebration at sunset with effortless elegance", scores: { champagne: 3, honey: 1 } },
+          { text: "A dune at dusk — calm, warm, and grounding", scores: { sand: 3, champagne: 1 } },
+          { text: "Sunlight poured over skin, silk, and glowing gold", scores: { honey: 3, sunsetBrown: 1 } }
+        ]
+      },
+      {
+        question: "How would you like your jewelry to feel?",
+        options: [
+          { text: "Quietly powerful", scores: { sunsetBrown: 3, whiskey: 1 } },
+          { text: "Expressive and artistic", scores: { ochre: 3, honey: 1 } },
+          { text: "Refined and intentional", scores: { whiskey: 3, sand: 1 } },
+          { text: "Celebratory yet tasteful", scores: { champagne: 3, honey: 1 } },
+          { text: "Soft, easy, and grounded", scores: { sand: 3, champagne: 1 } },
+          { text: "Radiant and unforgettable", scores: { honey: 3, ochre: 1 } }
+        ]
+      },
+      {
+        question: "Which style archetype sounds most like you?",
+        options: [
+          { text: "The collector", scores: { sunsetBrown: 3, whiskey: 1 } },
+          { text: "The artist", scores: { ochre: 3, honey: 1 } },
+          { text: "The discerning dresser", scores: { whiskey: 3, sunsetBrown: 1 } },
+          { text: "The classic with a playful streak", scores: { champagne: 3, sand: 1 } },
+          { text: "The grounded sophisticate", scores: { sand: 3, ochre: 1 } },
+          { text: "The glamour lover", scores: { honey: 3, champagne: 1 } }
+        ]
+      },
+      {
+        question: "Pick a metal pairing.",
+        options: [
+          { text: "Brushed gold", scores: { sunsetBrown: 3, whiskey: 1 } },
+          { text: "Yellow gold with heritage warmth", scores: { ochre: 3, honey: 1 } },
+          { text: "Rose gold with modern softness", scores: { whiskey: 2, champagne: 2 } },
+          { text: "Yellow gold with luminous sparkle", scores: { champagne: 3, honey: 2 } },
+          { text: "Platinum with subtle contrast", scores: { sand: 3, sunsetBrown: 1 } },
+          { text: "White gold framing a warm center stone", scores: { honey: 3, sand: 1 } }
+        ]
+      },
+      {
+        question: "What quality do you value most?",
+        options: [
+          { text: "Depth", scores: { sunsetBrown: 3, whiskey: 1 } },
+          { text: "Individuality", scores: { ochre: 3, sunsetBrown: 1 } },
+          { text: "Discernment", scores: { whiskey: 3, champagne: 1 } },
+          { text: "Joy", scores: { champagne: 3, honey: 1 } },
+          { text: "Balance", scores: { sand: 3, ochre: 1 } },
+          { text: "Warmth", scores: { honey: 3, sand: 1 } }
+        ]
+      }
+    ];
+
+    const appTitle = document.getElementById("appTitle");
+    const appSubtitle = document.getElementById("appSubtitle");
+    const introText = document.getElementById("introText");
+    const startBtn = document.getElementById("startBtn");
+
+    const introScreen = document.getElementById("introScreen");
+    const quizScreen = document.getElementById("quizScreen");
+    const resultScreen = document.getElementById("resultScreen");
+
+    const introSwatches = document.getElementById("introSwatches");
+    const directPicker = document.getElementById("directPicker");
+
+    const progressLabel = document.getElementById("progressLabel");
+    const progressFill = document.getElementById("progressFill");
+    const questionTitle = document.getElementById("questionTitle");
+    const optionsWrap = document.getElementById("optionsWrap");
+
+    const backToIntroBtn = document.getElementById("backToIntroBtn");
+    const retakeBtn = document.getElementById("retakeBtn");
+    const pickAnotherBtn = document.getElementById("pickAnotherBtn");
+
+    const resultBadge = document.getElementById("resultBadge");
+    const resultName = document.getElementById("resultName");
+    const resultShort = document.getElementById("resultShort");
+    const resultDescription = document.getElementById("resultDescription");
+    const resultPersonality = document.getElementById("resultPersonality");
+    const resultWhoWears = document.getElementById("resultWhoWears");
+    const resultScience = document.getElementById("resultScience");
+    const resultBuyNote = document.getElementById("resultBuyNote");
+    const traitsWrap = document.getElementById("traitsWrap");
+    const styleList = document.getElementById("styleList");
+
+    const diamondName = document.getElementById("diamondName");
+    const grad1 = document.getElementById("grad1");
+    const grad2 = document.getElementById("grad2");
+    const grad3 = document.getElementById("grad3");
+    const diamondStage = document.getElementById("diamondStage");
+
+    const copyShareBtn = document.getElementById("copyShareBtn");
+    const showShareBtn = document.getElementById("showShareBtn");
+    const shareOutput = document.getElementById("shareOutput");
+    const copyStatus = document.getElementById("copyStatus");
+
+    let currentQuestion = 0;
+    let currentResultKey = null;
+    let scores = {};
+
+    function initScores() {
+      scores = {};
+      Object.keys(diamondShades).forEach(key => {
+        scores[key] = 0;
+      });
+    }
+
+    function setAppCopy() {
+      appTitle.textContent = appCopy.title;
+      appSubtitle.textContent = appCopy.subtitle;
+      introText.textContent = appCopy.introText;
+      startBtn.textContent = appCopy.cta;
+    }
+
+    function renderIntroSwatches() {
+      introSwatches.innerHTML = "";
+      pickerLabels.forEach(item => {
+        const shade = diamondShades[item.key];
+        const swatch = document.createElement("div");
+        swatch.className = "swatch";
+        swatch.style.background = `linear-gradient(135deg, ${shade.glow}, ${shade.color})`;
+        swatch.textContent = item.title;
+        introSwatches.appendChild(swatch);
+      });
+    }
+
+    function renderDirectPicker() {
+      directPicker.innerHTML = "";
+      pickerLabels.forEach(item => {
+        const shade = diamondShades[item.key];
+        const btn = document.createElement("button");
+        btn.className = "shade-tile";
+        btn.style.background = `linear-gradient(135deg, ${shade.glow}, ${shade.accent})`;
+        btn.innerHTML = `${item.title}<small>${item.subtitle}</small>`;
+        btn.addEventListener("click", () => showResult(item.key));
+        directPicker.appendChild(btn);
+      });
+    }
+
+    function showScreen(screenEl) {
+      [introScreen, quizScreen, resultScreen].forEach(screen => {
+        screen.classList.remove("active");
+      });
+      screenEl.classList.add("active");
+    }
+
+    function startQuiz() {
+      initScores();
+      currentQuestion = 0;
+      renderQuestion();
+      showScreen(quizScreen);
+      copyStatus.textContent = "";
+      shareOutput.style.display = "none";
+      shareOutput.textContent = "";
+    }
+
+    function renderQuestion() {
+      const q = quizQuestions[currentQuestion];
+      questionTitle.textContent = q.question;
+      progressLabel.textContent = `Question ${currentQuestion + 1} of ${quizQuestions.length}`;
+      progressFill.style.width = `${((currentQuestion + 1) / quizQuestions.length) * 100}%`;
+
+      optionsWrap.innerHTML = "";
+      q.options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.textContent = option.text;
+        btn.addEventListener("click", () => selectOption(option.scores));
+        optionsWrap.appendChild(btn);
+      });
+    }
+
+    function selectOption(optionScores) {
+      Object.entries(optionScores).forEach(([key, value]) => {
+        scores[key] += value;
+      });
+
+      if (currentQuestion < quizQuestions.length - 1) {
+        currentQuestion += 1;
+        renderQuestion();
+      } else {
+        const winner = getWinningShade();
+        showResult(winner);
+      }
+    }
+
+    function getWinningShade() {
+      const entries = Object.entries(scores);
+      entries.sort((a, b) => b[1] - a[1]);
+
+      const topScore = entries[0][1];
+      const tied = entries.filter(entry => entry[1] === topScore).map(entry => entry[0]);
+
+      if (tied.length === 1) return tied[0];
+
+      const priority = ["sunsetBrown", "ochre", "whiskey", "champagne", "sand", "honey"];
+      return priority.find(key => tied.includes(key)) || tied[0];
+    }
+
+    function showResult(key) {
+      currentResultKey = key;
+      const shade = diamondShades[key];
+
+      resultBadge.textContent = shade.badge;
+      resultName.textContent = shade.name;
+      resultShort.textContent = shade.shortName;
+      resultDescription.textContent = shade.description;
+      resultPersonality.textContent = shade.personality;
+      resultWhoWears.textContent = shade.whoWears;
+      resultScience.textContent = shade.science;
+      resultBuyNote.textContent = shade.buyNote;
+
+      traitsWrap.innerHTML = "";
+      shade.traits.forEach(trait => {
+        const el = document.createElement("span");
+        el.className = "trait";
+        el.textContent = trait;
+        traitsWrap.appendChild(el);
+      });
+
+      styleList.innerHTML = "";
+      shade.style.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        styleList.appendChild(li);
+      });
+
+      grad1.setAttribute("stop-color", shade.glow);
+      grad2.setAttribute("stop-color", shade.accent);
+      grad3.setAttribute("stop-color", shade.color);
+      diamondName.textContent = shade.shortName;
+
+      diamondStage.style.background = `
+        radial-gradient(circle at 50% 22%, rgba(255,255,255,0.56), rgba(255,255,255,0.06) 35%, transparent 52%),
+        linear-gradient(180deg, ${hexToRgba(shade.glow, 0.55)}, ${hexToRgba(shade.color, 0.22)})
+      `;
+
+      shareOutput.style.display = "none";
+      shareOutput.textContent = getShareText(shade);
+      copyStatus.textContent = "";
+
+      showScreen(resultScreen);
+    }
+
+    function getShareText(shade) {
+      return `${shade.share} Discover your Desert Diamond shade.`;
+    }
+
+    function hexToRgba(hex, alpha) {
+      const clean = hex.replace("#", "");
+      const bigint = parseInt(clean, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    async function copyCurrentResult() {
+      if (!currentResultKey) return;
+      const shade = diamondShades[currentResultKey];
+      const text = getShareText(shade);
+
+      try {
+        await navigator.clipboard.writeText(text);
+        copyStatus.textContent = "Copied to clipboard.";
+      } catch (err) {
+        copyStatus.textContent = "Clipboard access failed. You can copy the preview text manually.";
+        shareOutput.style.display = "block";
+        shareOutput.textContent = text;
+      }
+    }
+
+    function toggleSharePreview() {
+      if (!currentResultKey) return;
+      const shade = diamondShades[currentResultKey];
+      shareOutput.textContent = getShareText(shade);
+      shareOutput.style.display = shareOutput.style.display === "block" ? "none" : "block";
+    }
+
+    startBtn.addEventListener("click", startQuiz);
+    backToIntroBtn.addEventListener("click", () => showScreen(introScreen));
+    retakeBtn.addEventListener("click", startQuiz);
+    pickAnotherBtn.addEventListener("click", () => showScreen(introScreen));
+    copyShareBtn.addEventListener("click", copyCurrentResult);
+    showShareBtn.addEventListener("click", toggleSharePreview);
+
+    setAppCopy();
+    renderIntroSwatches();
+    renderDirectPicker();
+    initScores();
+  </script>
+</body>
+</html>
